@@ -1,0 +1,93 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Users {
+  id String @id @default(uuid())
+  firstName String
+  lastName String
+  email String @unique
+  password String
+  phoneNumber String
+  isAdmin Boolean @default(false)
+  cart Cart[]
+  dogs Dogs[]
+  requests Requests []
+}
+
+model Dogs{
+  id String @id @default(uuid())
+  name String
+  breed String
+  age Int
+  weight Int
+  image String
+  imagePath String
+  usersId String
+  users Users @relation(fields: [usersId], references: [id], onDelete: Cascade)
+  dogServices DogServices[]
+}
+
+model Services {
+  id String @id @default(uuid())
+  title String
+  description String
+  price Float
+  startDate DateTime 
+  endDate DateTime
+  dogServices DogServices[]
+  cartItems CartItems[]
+  serviceRequests ServiceRequests[]
+}
+
+model DogServices{
+  id String @id @default(uuid())
+  dogsId String
+  dogs Dogs @relation(fields:[dogsId], references: [id])
+  servicesId String
+  services Services @relation(fields:[servicesId], references: [id])
+}
+
+model CartItems {
+  id String @id @default(uuid())
+  services Services @relation(fields: [servicesId], references: [id])
+  servicesId String
+  cart Cart @relation(fields: [cartId], references: [id])
+  cartId String
+}
+
+model Cart {
+  id String @id @default(uuid())
+  cartItems CartItems[]
+  users Users @relation(fields: [usersId], references: [id], onDelete: Cascade)
+  usersId String
+}
+
+model Requests {
+  id String @id @default(uuid())
+  usersId String
+  totalAmount Float
+  status String
+  users Users @relation(fields: [usersId], references:[id])
+  serviceRequests ServiceRequests[]
+}
+
+model ServiceRequests{
+  id String @id @default(uuid())
+  requestsId String
+  servicesId String
+  price Float
+  requests Requests @relation(fields:[requestsId], references:[id])
+  services Services @relation(fields:[servicesId], references:[id])
+}
